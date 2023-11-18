@@ -2,16 +2,20 @@ package com.queue.system.view.controller.impl;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.queue.system.core.service.GetRandomNumberService;
 import com.queue.system.view.controller.RequestNumberController;
 import com.queue.system.view.dto.response.NumberResponseDTO;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
-public class RequestNumberControllerImpl implements RequestNumberController{
+@RequiredArgsConstructor
+public class RequestNumberControllerImpl implements RequestNumberController {
 
+	private final GetRandomNumberService getRandomNumberService;
+	
 	@Override
-	public NumberResponseDTO getRandomNumberForUser(Integer userId) {
-		// TODO Auto-generated method stub
-		return new NumberResponseDTO(1);
+	public NumberResponseDTO getRandomNumberForUser(Long userId) {
+		return new NumberResponseDTO(getRandomNumberService.getRandomNumber(userId).number());
 	}
-
 }

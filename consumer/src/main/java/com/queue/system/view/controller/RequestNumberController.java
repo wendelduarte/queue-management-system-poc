@@ -10,5 +10,5 @@ import com.queue.system.view.dto.response.NumberResponseDTO;
 public interface RequestNumberController {
 
 	@GetMapping("/{userId}")
-	NumberResponseDTO getRandomNumberForUser(@PathVariable(name = "userId") Integer userId);
+	NumberResponseDTO getRandomNumberForUser(@PathVariable(name = "userId") Long userId);
 }
