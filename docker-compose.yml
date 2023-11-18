@@ -1,0 +1,39 @@
+version: "2.4"
+
+services:
+        database:
+                image: mysql:8.0.33 
+                restart: always
+                volumes:
+                        - mysql_data:/var/lib/mysql
+                ports:
+                        - "3306:3306"
+                environment:
+                        MYSQL_ROOT_PASSWORD: 'root'
+                healthcheck:
+                        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+                        timeout: 20s
+                        retries: 10
+        provider:
+                build:
+                        context: ./provider
+                        dockerfile: Dockerfile
+                entrypoint: ["java", "-jar", "/usr/local/lib/provider/*.jar"]
+                ports:
+                        - "8081:8081"
+        consumer:
+                build:
+                        context: ./consumer
+                        dockerfile: Dockerfile
+                entrypoint: ["java", "-jar", "/usr/local/lib/consumer/*.jar"]
+                ports:
+                        - "8080:8080"
+                environment:
+                        - SPRING_DATASOURCE_URL=jdbc:mysql://database:3306/queue_system_consumer?createDatabaseIfNotExist=true&Timezone=UTC]
+                        - PROVIDER_HOST=http://provider:8081
+                depends_on:
+                        - database
+                        - provider
+volumes:
+        mysql_data:
+
