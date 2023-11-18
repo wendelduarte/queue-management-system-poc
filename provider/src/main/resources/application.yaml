@@ -1,0 +1,11 @@
+server:
+  port: 8081
+  
+resilience4j.ratelimiter:
+    instances:
+        randomNumber:
+            limitForPeriod: 5
+            limitRefreshPeriod: 5s
+            timeoutDuration: 10
+            registerHealthIndicator: true
+            eventConsumerBufferSize: 100

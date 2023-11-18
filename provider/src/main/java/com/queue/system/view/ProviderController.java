@@ -8,27 +8,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+
 @RestController
 @RequestMapping("/provider")
 public class ProviderController {
 
 	@GetMapping
-	public ResponseEntity<NumberGenerated> getNumber() {
-		Random random = new Random();
-		
-		int range = 31;
-		
-		int generatedNumber = random.nextInt(range);
-		
-		var numberGenerated = new NumberGenerated(generatedNumber, true);
-		
-		if(generatedNumber < 10) {
-			return ResponseEntity.ok(numberGenerated);
-		} else if (generatedNumber >= 10 && generatedNumber < 20) {
-			return new ResponseEntity<NumberGenerated>(numberGenerated, HttpStatus.TOO_MANY_REQUESTS);
-		} else {
-			return new ResponseEntity<NumberGenerated>(numberGenerated, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	@RateLimiter(name = "randomNumber", fallbackMethod = "getNumberFallback")
+	public ResponseEntity<ResponseDTO> getNumber() {
+		Random random = new Random();	
+		var numberGenerated = new NumberGenerated(random.nextInt(), true);
+		return ResponseEntity.ok(numberGenerated);
 	}
 	
+	public ResponseEntity<ResponseDTO> getNumberFallback(RequestNotPermitted requestNotPermitted) {
+		var message = new LimiterError("Too many calls to getNumber()");
+		return new ResponseEntity<ResponseDTO>(message, HttpStatus.TOO_MANY_REQUESTS);
+	}
 }

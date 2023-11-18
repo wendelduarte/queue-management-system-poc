@@ -5,6 +5,6 @@ import lombok.Builder;
 @Builder
 public record NumberGenerated(
 		Integer number,
-		boolean generated) {
+		boolean generated) implements ResponseDTO{
 
 }
