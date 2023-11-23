@@ -1,30 +1,37 @@
 package com.queue.system.core.service.impl;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 
 import com.queue.system.core.domain.ServiceMetricsDomain;
 import com.queue.system.core.service.GetMetricsService;
 
-import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.search.MeterNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class GetMetricsServiceImpl implements GetMetricsService {
-
-	private final Counter allCallsToEndpointRandom;
-	private final Counter callsWithErrorToEndpointRandom;
 	
-	public GetMetricsServiceImpl(@Qualifier("allCallsToEndpointRandom") Counter allCallsToEndpointRandom, 
-			@Qualifier("callsWithErrorToEndpointRandom") Counter callsWithErrorToEndpointRandom) {
-		this.allCallsToEndpointRandom = allCallsToEndpointRandom;
-		this.callsWithErrorToEndpointRandom = callsWithErrorToEndpointRandom;
-	}
+	private static final double NO_METRICS = 0;
+	private static final int ONE_MINUTE_IN_SECONDS = 60;
+	
+
+	private final MeterRegistry meterRegistry;
 
 	@Override
 	public ServiceMetricsDomain execute() {
-		var allCalls = allCallsToEndpointRandom.count();
-		var errorsCalls = callsWithErrorToEndpointRandom.count();
-		var percentageOfSuccess = (errorsCalls / allCalls) * 100;
-		return new ServiceMetricsDomain(allCalls, errorsCalls, percentageOfSuccess);
+		try {
+			var allCalls = meterRegistry.get("call.endpoint.random").counter().count();
+			var errorsCalls = meterRegistry.get("call.endpoint.random.with.error").counter().count();
+			double percentageOfErrors = (errorsCalls / allCalls) * 100;
+			double callsPerSecond = allCalls / LocalDateTime.now().getSecond();
+			
+			return new ServiceMetricsDomain(allCalls, errorsCalls, percentageOfErrors, callsPerSecond);	
+		} catch (MeterNotFoundException exception) {
+			return new ServiceMetricsDomain(NO_METRICS, NO_METRICS, NO_METRICS, NO_METRICS);
+		}
 	}
 }

@@ -17,7 +17,7 @@ public class MetricsControllerImpl implements MetricsController{
 	@Override
 	public MetricsResponseDTO getMetrics() {
 		var metrics = getMetricsService.execute();
-		return new MetricsResponseDTO(metrics.totalCalls(), metrics.callWithError(), metrics.percentageOfSuccess());
+		return new MetricsResponseDTO(metrics.totalCalls(), metrics.callWithError(), metrics.percentageOfErrors(), metrics.callsPerSecond());
 	}
 
 }
